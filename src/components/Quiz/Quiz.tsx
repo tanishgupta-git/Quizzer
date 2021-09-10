@@ -1,6 +1,7 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect, useRef} from 'react'
 import { Button,Form } from 'react-bootstrap';
-
+import he from 'he';
+import ShuffleQuestions from '../../utils/shuffleQuestion.js'
 
 type Props = {
   quizUrl : string,
@@ -14,7 +15,8 @@ interface QuestionI {
   category : string,
   correct_answer : string,
   difficulty : string,
-  incorrect_answers : string[],
+  incorrect_answers: string[],
+  options: string[],
   question : string,
   type : string
 }
@@ -25,17 +27,18 @@ interface TimeI {
 }
 
 const Quiz: React.FC<Props> = ({quizUrl,userDetail}) =>  {
-    const [time,setTime] = useState<TimeI>({minutes:1,seconds:0});
+    const [time,setTime] = useState<TimeI>({minutes:userDetail.time,seconds:0});
     const [questions,setQuestions] = useState<QuestionI[]>([] as QuestionI[]);
-    const [currQuestion,setCurrQuestion] = useState(1);
+    const [currQuestion,setCurrQuestion] = useState(0);
+    const [answer,setAnswer] = useState("");
     const [score,setScore] = useState(0);
+    const timerRef = useRef< NodeJS.Timeout>(null as unknown as NodeJS.Timeout);
 
     useEffect(() => {
       fetch(quizUrl).then(res => res.json())
-      .then((data) => {
-          setQuestions(data.results);
-          console.log(data.results)
-        //   Ticker();
+      .then((data) => { 
+          setQuestions(data.results.map((result:QuestionI) => ({...result,options:ShuffleQuestions([result.correct_answer,...result.incorrect_answers])})));
+          timerRef.current  = Ticker();
       })
     },[quizUrl])
 
@@ -58,37 +61,44 @@ const Quiz: React.FC<Props> = ({quizUrl,userDetail}) =>  {
             alert("Test is Over");
          }
       },1000) ;
-
+    return returnId;
     }
   
     const handleClick = () => {
-
-
+      if (currQuestion + 1 === questions.length) {
+        clearInterval(timerRef.current);
+        alert(`Your Score Is ${score}`);
+        return;
+      }
+      if( answer === he.decode(questions[currQuestion].correct_answer)) {
+        setScore(prev => prev + 1);
+      }
+      setCurrQuestion(prev => prev + 1);    
     }
 
-    const handleChange = (e:React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e.target.id);
+    const handleChange = (clickedAnswer:string) => {
+        setAnswer(clickedAnswer);
     }
     return (
         <div>
             <p>{time.minutes}:{time.seconds}</p>
             {questions.length && 
              <div>
-               <p>{currQuestion} / {questions.length}</p>
+               <p>{currQuestion + 1} / {questions.length}</p>
                <div>
-                   <p>{questions[currQuestion].question}</p>
+                   <p>{he.decode(questions[currQuestion].question)}</p>
                      <div>
                        {
-                           [questions[currQuestion].correct_answer,...questions[currQuestion].incorrect_answers].map
+                           questions[currQuestion].options.map
                            (
                                (item,index) => (
                                 <Form.Check 
-                                key={index}
+                                key={`${currQuestion}${index}Q`}
                                 type='radio'
-                                id={index.toString()}
-                                label={item}
+                                id={`${currQuestion}${index}Q`}
+                                label={he.decode(item)}
                                 name={`${currQuestion}Q`}
-                                onChange={handleChange}
+                                onChange={() => handleChange(he.decode(item))}
                               />
                                )
                            )
