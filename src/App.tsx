@@ -1,24 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
+import React,{useState} from 'react';
 import './App.css';
+import Header from './components/Header/Header';
+import Quiz from './components/Quiz/Quiz';
+import QuizForm from './components/QuizForm/QuizForm';
 
+type userDetailT = {
+  name : string,
+  time : number
+}
 function App() {
+  const [quizUrl,setQuizUrl] = useState("");
+  const [userDetail,setUserDetail] = useState<userDetailT>({} as userDetailT);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header />
+      { !quizUrl ? 
+      <QuizForm setQuizUrl={setQuizUrl} setUserDetail={setUserDetail} />
+       :
+      <Quiz quizUrl={quizUrl} userDetail={userDetail} />
+      }
     </div>
   );
 }
