@@ -1,7 +1,8 @@
 import React,{useState,useEffect, useRef} from 'react'
 import { Button,Form } from 'react-bootstrap';
 import he from 'he';
-import ShuffleQuestions from '../../utils/shuffleQuestion.js'
+import ShuffleQuestions from '../../utils/ShuffleQuestion';
+import Timer from '../../utils/Timer';
 
 type Props = {
   quizUrl : string,
@@ -38,31 +39,9 @@ const Quiz: React.FC<Props> = ({quizUrl,userDetail}) =>  {
       fetch(quizUrl).then(res => res.json())
       .then((data) => { 
           setQuestions(data.results.map((result:QuestionI) => ({...result,options:ShuffleQuestions([result.correct_answer,...result.incorrect_answers])})));
-          timerRef.current  = Ticker();
+          timerRef.current  = Timer(setTime);
       })
     },[quizUrl])
-
-    const Ticker = () => {
-     var returnId = setInterval(() => {
-         let min,sec;
-          setTime( (prev) => {
-              min = prev.minutes;
-              sec = prev.seconds;
-
-              if(sec === 0) {
-                  min = prev.minutes - 1;
-                  sec = 60;
-              }
-              sec = sec - 1;
-              return ({ minutes:min,seconds:sec})
-          })
-          if (min === 0 && sec === 0) {
-            clearInterval(returnId)
-            alert("Test is Over");
-         }
-      },1000) ;
-    return returnId;
-    }
   
     const handleClick = () => {
       if (currQuestion + 1 === questions.length) {

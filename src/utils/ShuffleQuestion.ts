@@ -1,4 +1,4 @@
-const ShuffleQuestions = (arr) => {
+const ShuffleQuestions = (arr : string[]) => {
     let newArr = [];
     while(arr.length) {
      const random = Math.floor(Math.random() * arr.length);
