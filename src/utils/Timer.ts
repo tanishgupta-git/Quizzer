@@ -5,7 +5,8 @@ interface TimeI {
 
 const Timer = (setTime:React.Dispatch<React.SetStateAction<TimeI>>) => {
     var returnId = setInterval(() => {
-        let min,sec;
+        let min:number=0,sec:number=0;
+  
          setTime( (prev) => {
              min = prev.minutes;
              sec = prev.seconds;
@@ -17,7 +18,7 @@ const Timer = (setTime:React.Dispatch<React.SetStateAction<TimeI>>) => {
              sec = sec - 1;
              return ({ minutes:min,seconds:sec})
          })
-         if (min === 0 && sec === 0) {
+         if ((min === 0 && sec === 0) || (min < 0) ) {
            clearInterval(returnId)
            alert("Test is Over");
         }
